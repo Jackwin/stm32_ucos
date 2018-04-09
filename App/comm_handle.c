@@ -22,8 +22,7 @@
 /* Private functions ---------------------------------------------------------*/
 // COM2 modbus master --------------------------------
 #define READ_SLAVE_COUNT 8;
-MODBUS_MASTER_STRUCT  master;
-MODBUS_SLAVER_STRUCT  slave;
+
 
 //------------------------------------------------------
 void P_Comm3_Handle(void)
@@ -181,11 +180,7 @@ void P_Comm2_Handle(void)
     OS_EXIT_CRITICAL();
 
     // By chunjie 2018-4-1
-    u16 tmp_result1, tmp_result2;
-    u8 modbus_write[] = {0x00,0x32,0xfe,0x02,0x04,0x21,0x00,0x00};
-    if (master.Status && DATADEALCOMPL) {
-        master.Status &=~DATADEALCOMPL;  //数据处理完成
-    }
+
 
 
 
@@ -449,76 +444,7 @@ void P_Comm1_Handle(void)
     }
 }
 
-// Modbus Master
-/*--------------------------------------------------------------------
-函数名称：SenDFuncode10Frame()
-函数功能：写多个寄存器
-注意事项
-提示说明
-输        入：Add,RegAdd,RegLen
-返    回
---------------------------------------------------------------------*/
- void MMSenDFuncode10Frame(uint8_t Add,uint16_t RegAdd,uint16_t RegLen,uint8_t *DataPtr)
- {
-    uint16_t Crc16_tempdata=0;
-    uint8_t     i;
 
-    master.ModbusAdd=Add;
-    static COMM_DATA comm2_sendbuf_temp;
-    master.SendDataBuf[0] = Add;  //从机地址
-    master.SendDataBuf[1] = 0x10;     //功能号
-    master.SendDataBuf[2] =((RegAdd & 0xff00)>>8);//寄存器地址高字节
-    master.SendDataBuf[3] =(RegAdd & 0x00ff); //寄存器地址低字节
-    master.SendDataBuf[4] =((RegLen & 0xff00)>>8);     //寄存器数量高字节
-    master.SendDataBuf[5] =(RegLen & 0x00ff);       //寄存器数量低字节
-    master.SendDataBuf[6] =(RegLen<<1); // 字节数
-
-    master.SendBufPtr=&master.SendDataBuf[7];
-    for(i=0;i<(RegLen<<1);i++)
-    {
-      *(master.SendBufPtr++)=*(DataPtr++);
-    }
-    Crc16_tempdata = Get_CRC(master.SendDataBuf,(7+master.SendDataBuf[6]));
-    master.SendDataBuf[(7+master.SendDataBuf[6])] =(uint8_t)  ((Crc16_tempdata & 0xff00) >> 8);//CRC高八位
-    master.SendDataBuf[(7+master.SendDataBuf[6])+1] =(uint8_t) (Crc16_tempdata & 0x00ff);
-
-                comm3_sendbuf_temp.DataBuf[0] = comm3_recebuf_temp.DataBuf[0];
-                  comm3_sendbuf_temp.DataBuf[1] = comm3_recebuf_temp.DataBuf[1];
-                  comm3_sendbuf_temp.DataBuf[2] = num_of_registers_temp << 1;
-
-                  comm3_sendbuf_temp.DataLong    = comm3_sendbuf_temp.DataBuf[2] + 5;
-                  comm3_sendbuf_temp.CommChannel = 3;
-                  comm3_sendbuf_temp.DataCount   = 0;
-                  comm3_sendbuf_temp.OK          = 1;
-
-                  for(i=0; i<num_of_registers_temp; i++)
-                    {
-                        OS_ENTER_CRITICAL();
-                        comm3_sendbuf_temp.DataBuf[(i<<1)+3] = (u8)(ALL_DATA_RAM[starting_target_addr_temp+i] >> 8);
-                        comm3_sendbuf_temp.DataBuf[(i<<1)+4] = (u8)(ALL_DATA_RAM[starting_target_addr_temp+i]);
-                        OS_EXIT_CRITICAL();
-                    }
-
-                  data_crc_temp = Get_CRC(&comm3_sendbuf_temp.DataBuf[0], (comm3_sendbuf_temp.DataLong - 2));
-
-                  comm3_sendbuf_temp.DataBuf[comm3_sendbuf_temp.DataLong - 2] = (u8)(data_crc_temp >> 8 & 0x00FF);
-                  comm3_sendbuf_temp.DataBuf[comm3_sendbuf_temp.DataLong - 1] = (u8)(data_crc_temp      & 0x00FF);
-
-                  OS_ENTER_CRITICAL();
-                  memcpy(&COMM3_SendBuf,&comm3_sendbuf_temp,sizeof(comm3_sendbuf_temp));
-                  OS_EXIT_CRITICAL();
-
-                  BSP_COMM_Send(COMM3_SendBuf);
-                // Copy data from master send buffer to com2_sendbuf_tmp
-                    u16 total_byte = 7 + RegLen + 2;
-                    memcpy(comm2_sendbuf_temp.DataBuf, master.SendDataBuf,sizeof(u8) * total_byte);
-
-                    comm2_sendbuf_temp.DataLong    = comm3_sendbuf_temp.DataBuf[2] + 5;
-                  comm2_sendbuf_temp.CommChannel = 2;
-                  comm2_sendbuf_temp.DataCount   = 0;
-                  comm2_sendbuf_temp.OK          = 1;
-    BSP_COMM_Send(COMM2_SendBuf);
- }
 
  /*--------------------------------------------------------------------
 函数名称：SenDFuncode03Frame()
@@ -529,7 +455,7 @@ void P_Comm1_Handle(void)
 返    回
 --------------------------------------------------------------------*/
  void MMSenDFuncode03Frame(uint8_t SlaveAddress,uint16_t RegStar_Address,uint16_t RegLen)
- {
+ {      OS_CPU_SR  cpu_sr = 0;
         u16 data_crc_temp = 0;
         COMM_DATA comm2_fun03_sendbuf;
         //Master.ModbusAdd=SlaveAddress;
@@ -543,73 +469,37 @@ void P_Comm1_Handle(void)
 
         comm2_fun03_sendbuf.DataBuf[0] = SlaveAddress;
         comm2_fun03_sendbuf.DataBuf[1] = 0x03;
+        //起始地址
         comm2_fun03_sendbuf.DataBuf[2] =((RegStar_Address & 0xff00)>>8);//
         comm2_fun03_sendbuf.DataBuf[3] =(RegStar_Address & 0x00ff); //
+        // 寄存器数量
         comm2_fun03_sendbuf.DataBuf[4] =((RegLen & 0xff00)>>8);     //
         comm2_fun03_sendbuf.DataBuf[5] =(RegLen & 0x00ff);     //
 
         // What is the length incluing CRC
-        comm2_sendbuf_temp.DataLong    =  + 5;
-        comm2_sendbuf_temp.CommChannel = 2;
-        comm3_sendbuf_temp.DataCount   = 0;
-        comm3_sendbuf_temp.OK          = 1;
+        comm2_fun03_sendbuf.DataLong    = 8;
+        comm2_fun03_sendbuf.CommChannel = 2;
+        comm2_fun03_sendbuf.DataCount   = 0;
+        comm2_fun03_sendbuf.OK          = 1;
 
 
-        data_crc_temp = Get_CRC(&comm2_recebuf_temp.DataBuf[0], (comm2_recebuf_temp.DataLong - 2));
+        data_crc_temp = Get_CRC(&comm2_fun03_sendbuf.DataBuf[0], (comm2_fun03_sendbuf.DataLong - 2));
 
-        comm2_sendbuf_temp.DataBuf[comm3_sendbuf_temp.DataLong - 2] = (u8)(data_crc_temp >> 8 & 0x00FF);
-        comm2_sendbuf_temp.DataBuf[comm3_sendbuf_temp.DataLong - 1] = (u8)(data_crc_temp      & 0x00FF);
-
-        //Master.SendDataBuf[6] =(u8) ((Crc16_tempdata & 0xff00) >> 8);//CRC
-        //Master.SendDataBuf[7] =(u8) (Crc16_tempdata & 0x00ff);
+        comm2_fun03_sendbuf.DataBuf[comm2_fun03_sendbuf.DataLong - 2] = (u8)(data_crc_temp >> 8 & 0x00FF);
+        comm2_fun03_sendbuf.DataBuf[comm2_fun03_sendbuf.DataLong - 1] = (u8)(data_crc_temp      & 0x00FF);
 
         OS_ENTER_CRITICAL();
-        memcpy(&COMM3_SendBuf,&comm3_sendbuf_temp,sizeof(comm3_sendbuf_temp));
+        memcpy(&COMM3_SendBuf,&comm2_fun03_sendbuf,sizeof(comm2_fun03_sendbuf));
         OS_EXIT_CRITICAL();
 
         BSP_COMM_Send(COMM3_SendBuf);
 
  }
   /*--------------------------------------------------------------------
-º¯ÊýÃû³Æ£ºvoid readRegisters(void)
-º¯Êý¹¦ÄÜ£º0x03 ¶Á¼Ä´æÆ÷
-×¢ÒâÊÂÏî£º
-ÌáÊ¾ËµÃ÷£º
-Êä    Èë£º
-·µ    »Ø£º
+
+
 --------------------------------------------------------------------*/
-void MMReceiveFuncode03_ResponseData(void)
-{
-    uint16_t  Crc16_tempdata=0;
-    uint8_t   Crc16_DataLo=0,Crc16_DataHi=0;
-    uint8_t   Crc16_TempLo=0,Crc16_TempHi=0;
 
- if(Master.ReceBufPtr==(&Master.ReceDataBuf[Master.ReceDataBuf[2]+5])) //È¡CRCµÍ8Î»µÄµØÖ·£¬¼ì²é¶ÁÃüÁîÖ¡½ÓÊÕÍê±Ï
-      {
-            vMBPortSerialEnable(FALSE,FALSE );//¹Ø±Õ½ÓÊÕÖÐ¶Ï£¬¹Ø±Õ·¢ËÍÖÐ¶Ï£¬
-
-            Master.Status|=FRAMERECECOMPL;  //Ö¡½ÓÊÕÍê³É±êÖ¾
-            MasterTimeOutTimersDisable();   /*½ÓÊÕÍê³Éºó£¬¹Øµô¶¨Ê±Æ÷*/
-            Master.Status &= ~FRAMERECETIMEOUT;  // clear event
-
-            Crc16_tempdata=(uint16_t) crc16(&Master.ReceDataBuf[0], (3+Master.ReceDataBuf[2]) );//¼ÆËãCRCÊý¾Ý
-            Crc16_DataLo= (uint8_t) (Crc16_tempdata & 0x00ff);
-            Crc16_DataHi= (uint8_t) ((Crc16_tempdata & 0xff00)>>8);
-
-            Crc16_TempLo=Master.ReceDataBuf[Master.ReceDataBuf[2]+4];
-            Crc16_TempHi=Master.ReceDataBuf[Master.ReceDataBuf[2]+3];
-
-     if((Crc16_DataHi==Crc16_TempHi) && ( Crc16_DataLo==Crc16_TempLo ) )//CRCÐ£ÑéÕýÈ·
-        {
-             Master.Status|=FRAMERECECRCOK;//½ÓÊÕÊý¾ÝÕýÈ·
-        }
-        else //´íÎó´¦Àíº¯Êý
-        {
-            Initilize_UART3Buf();
-        }
-
-      }
-}
 
 //-------------------------------------------------------------------
 void MasterReadSlave(void) {
