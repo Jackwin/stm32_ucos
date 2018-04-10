@@ -10,7 +10,7 @@
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __COMM_HANDLE_H
 #define __COMM_HANDLE_H
-//include "stm32f10x_it.h" 
+//include "stm32f10x_it.h"
 //include "control_comm.h"
 /* Includes ------------------------------------------------------------------*/
 /* Exported types ------------------------------------------------------------*/
@@ -21,7 +21,6 @@
 extern void P_Comm3_Handle(void);
 extern void P_Comm2_Handle(void);
 extern void P_Comm1_Handle(void);
-
 
 
 #endif /* __comm_handle_H */

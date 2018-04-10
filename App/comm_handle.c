@@ -504,4 +504,11 @@ void P_Comm1_Handle(void)
 //-------------------------------------------------------------------
 void MasterReadSlave(void) {
 
+  MMSenDFuncode03Frame(0x30, 0x00, 2);
+  OSTmrStart(timer_100ms, &err); //Start timer
+
+  // if time-out and not rev
+  // jumpt out
 }
+
+

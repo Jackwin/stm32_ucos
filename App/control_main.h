@@ -20,7 +20,7 @@
 #define TASK_LOGIC_PRIO			 	8
 #define	TASK_MMI_PRIO				7
 
-#define	TASK_COMM1_RECE_PRIO		4	
+#define	TASK_COMM1_RECE_PRIO		4
 #define	TASK_COMM2_RECE_PRIO		5
 #define	TASK_COMM3_RECE_PRIO		6
 //#define	TASK_COMM1_SEND_PRIO		10
@@ -41,6 +41,11 @@
 extern OS_EVENT *Sem_Comm1Rece;
 extern OS_EVENT *Sem_Comm2Rece;
 extern OS_EVENT *Sem_Comm3Rece;
+
+//chunjie
+extern u8 comm2_master_wait_time_out;
+extern OS_TMR   *timer_100ms;
+extern OS_TMR   *timer_50ms;
 //extern OS_EVENT *Sem_Comm1Send;
 //extern OS_EVENT *Sem_Comm2Send;
 //extern OS_EVENT *Sem_Comm3Send;
