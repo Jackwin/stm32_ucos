@@ -13,6 +13,7 @@
 #include "control_global.h"
 #include "sys.h"
 #include "usart.h"
+#include "control_main.h"
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
@@ -159,6 +160,31 @@ void P_Comm3_Handle(void)
     }
 }
 
+// By chunjie 2018-4-1
+void P_Comm2_Send_Handle (void) {
+    u8 err;
+    u8 time_out_tmp, recv_complete_tmp;
+   // comm2_master_complete_recv = 0;
+    OS_CPU_SR  cpu_sr = 0;
+    MMSenDFuncode03Frame(0x30, 0x00, 2);
+    OSTmrStart(timer_100ms, &err); //Start timer
+    
+    while(!time_out_tmp | !recv_complete_tmp) {
+      time_out_tmp = comm2_master_wait_time_out;
+      recv_complete_tmp = comm2_master_complete_recv;
+    }
+
+    if (recv_complete_tmp) {
+      comm2_master_complete_recv = 0;
+      printf("Success to Receive.\n");
+    }
+    else if (time_out_tmp) {
+      printf("COMM2 Master send timeout.\n");
+    }
+    
+
+}
+
 void P_Comm2_Handle(void)
 {
     OS_CPU_SR  cpu_sr = 0;
@@ -179,7 +205,6 @@ void P_Comm2_Handle(void)
     COMM2_ReceBuf.DataLong  = 0;
     OS_EXIT_CRITICAL();
 
-    // By chunjie 2018-4-1
 
 
 
@@ -454,7 +479,7 @@ void P_Comm1_Handle(void)
 输    入：SlaveAddress,RegStar_Address,RegLen
 返    回
 --------------------------------------------------------------------*/
- void MMSenDFuncode03Frame(uint8_t SlaveAddress,uint16_t RegStar_Address,uint16_t RegLen)
+ void MMSenDFuncode03Frame(u8 SlaveAddress,uint16_t RegStar_Address,u16 RegLen)
  {      OS_CPU_SR  cpu_sr = 0;
         u16 data_crc_temp = 0;
         COMM_DATA comm2_fun03_sendbuf;
@@ -503,7 +528,7 @@ void P_Comm1_Handle(void)
 
 //-------------------------------------------------------------------
 void MasterReadSlave(void) {
-
+  u8 err;
   MMSenDFuncode03Frame(0x30, 0x00, 2);
   OSTmrStart(timer_100ms, &err); //Start timer
 

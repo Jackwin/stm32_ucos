@@ -35,20 +35,22 @@ static OS_STK    TaskComm1ReceStk[TASK_COMM1_RECE_STK_SIZE];
 static OS_STK    TaskComm2ReceStk[TASK_COMM2_RECE_STK_SIZE];
 static OS_STK    TaskComm3ReceStk[TASK_COMM3_RECE_STK_SIZE];
 //static OS_STK    TaskComm1SendStk[TASK_COMM1_SEND_STK_SIZE];
-//static OS_STK    TaskComm2SendStk[TASK_COMM2_SEND_STK_SIZE];
+static OS_STK    TaskComm2SendStk[TASK_COMM2_SEND_STK_SIZE];
 //static OS_STK    TaskComm3SendStk[TASK_COMM3_SEND_STK_SIZE];
 
 OS_EVENT *Sem_Comm1Rece;
 OS_EVENT *Sem_Comm2Rece;
 OS_EVENT *Sem_Comm3Rece;
 //OS_EVENT *Sem_Comm1Send;
-//OS_EVENT *Sem_Comm2Send;
+OS_EVENT *Sem_Comm2Send;
 //OS_EVENT *Sem_Comm3Send;
 
 //chunjie
 OS_TMR   *timer_100ms;
 OS_TMR   *timer_50ms;
 u8      comm2_master_wait_time_out;
+u8 		comm2_master_complete_send;
+u8 		comm2_master_complete_recv;
 
 /* Private function ----------------------------------------------------------*/
 static void TaskCreate(void *p_arg);
@@ -61,7 +63,7 @@ static void TaskComm1Rece(void *p_arg);
 static void TaskComm2Rece(void *p_arg);
 static void TaskComm3Rece(void *p_arg);
 //static void TaskComm1Send(void *p_arg);
-//static void TaskComm2Send(void *p_arg);
+static void TaskComm2Send(void *p_arg);
 //static void TaskComm3Send(void *p_arg);
 
 //Chunjie
@@ -112,14 +114,14 @@ static void TaskCreate(void *p_arg)
   OSTaskCreate(TaskComm3Rece,(void*)0,&TaskComm3ReceStk[TASK_COMM3_RECE_STK_SIZE-1],TASK_COMM3_RECE_PRIO);
 //2016.1.24
 //  OSTaskCreate(TaskComm1Send,(void*)0,&TaskComm1SendStk[TASK_COMM1_SEND_STK_SIZE-1],TASK_COMM1_SEND_PRIO);
-//  OSTaskCreate(TaskComm2Send,(void*)0,&TaskComm2SendStk[TASK_COMM2_SEND_STK_SIZE-1],TASK_COMM2_SEND_PRIO);
+  OSTaskCreate(TaskComm2Send,(void*)0,&TaskComm2SendStk[TASK_COMM2_SEND_STK_SIZE-1],TASK_COMM2_SEND_PRIO);
 //2016.1.24
 //  OSTaskCreate(TaskComm3Send,(void*)0,&TaskComm3SendStk[TASK_COMM3_SEND_STK_SIZE-1],TASK_COMM3_SEND_PRIO);
 
 
 //	Sem_Comm1Send = OSSemCreate(0);
 	Sem_Comm1Rece = OSSemCreate(0);
-//	Sem_Comm2Send = OSSemCreate(0);
+	Sem_Comm2Send = OSSemCreate(0);
 	Sem_Comm2Rece = OSSemCreate(0);
 //	Sem_Comm3Send = OSSemCreate(0);
 	Sem_Comm3Rece = OSSemCreate(0);
@@ -349,12 +351,26 @@ static void TaskComm2Rece(void *p_arg)
 
 	(void)p_arg;
 
-    timer_100ms = OSTmrCreate(10, 10, OS_TMR_OPT_PERIODIC, (OS_TMR_CALLBACK)timer_100ms_callback, 0, "timer_100ms", &err);
 
 	while(1)
 	{
 		OSSemPend(Sem_Comm2Rece,0,&err);
 		P_Comm2_Handle();
+	}
+}
+	
+//chunjie
+static void TaskComm2Send(void *p_arg)
+{
+	u8 err;
+
+	(void)p_arg;
+
+
+	while(1)
+	{
+		OSSemPend(Sem_Comm2Send,0,&err);
+		P_Comm2_Send_Handle();
 	}
 }
 

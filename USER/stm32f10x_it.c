@@ -96,6 +96,17 @@ void SysTick_Handler(void)
 		BSP_Comm_Idle_Mode(3);
 		OSSemPost(Sem_Comm3Rece);
 	}
+// chunjie
+	if (COMM2_SendBuf.FrameDelayMS != 0) {
+		COMM2_SendBuf.FrameDelayMS--;
+        comm2_master_complete_send = 0;
+	}
+    else if (COMM2_SendBuf.OK == 0) {
+        COMM2_ReceBuf.OK = 1;
+        comm2_master_complete_send = 1;
+        BSP_Comm_Idle_Mode(2);
+        OSSemPost(Sem_Comm2Send);
+    }
 #if 1	
 	if(COMM2_ReceBuf.FrameDelayMS != 0)
 	{
