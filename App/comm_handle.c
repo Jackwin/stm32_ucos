@@ -167,7 +167,7 @@ void P_Comm1_Send_Handle (void) {
    // comm2_master_complete_recv = 0;
     OS_CPU_SR  cpu_sr = 0;
     MMSenDFuncode03Frame(0x30, 0x00, 2);
-    OSTmrStart(timer_100ms, &err); //Start timer
+    //OSTmrStart(timer_100ms, &err); //Start timer
 
     while(!time_out_tmp | !recv_complete_tmp) {
       time_out_tmp = comm1_master_wait_time_out;
@@ -532,7 +532,7 @@ void P_Comm1_Handle(void)
 void MasterReadSlave(void) {
   u8 err;
   MMSenDFuncode03Frame(0x30, 0x00, 2);
-  OSTmrStart(timer_100ms, &err); //Start timer
+//  OSTmrStart(timer_100ms, &err); //Start timer
 
   // if time-out and not rev
   // jumpt out

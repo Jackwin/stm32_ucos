@@ -42,7 +42,7 @@
 extern OS_EVENT *Sem_Comm1Rece;
 extern OS_EVENT *Sem_Comm2Rece;
 extern OS_EVENT *Sem_Comm3Rece;
-extern OS_EVENT *Sem_Comm2Send;
+extern OS_EVENT *Sem_Comm1Send;
 //chunjie
 
 extern u8 comm1_master_wait_time_out;

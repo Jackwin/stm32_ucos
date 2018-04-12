@@ -21,6 +21,7 @@
 #include "myiic.h"
 #include "delay.h"
 #include "comm_handle.h"
+#include "control_do.h"
 //Ó¦ÓÃÌí¼Ó--------------------
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -35,17 +36,18 @@ static OS_STK    TaskComm1ReceStk[TASK_COMM1_RECE_STK_SIZE];
 static OS_STK    TaskComm2ReceStk[TASK_COMM2_RECE_STK_SIZE];
 static OS_STK    TaskComm3ReceStk[TASK_COMM3_RECE_STK_SIZE];
 //static OS_STK    TaskComm1SendStk[TASK_COMM1_SEND_STK_SIZE];
-static OS_STK    TaskComm2SendStk[TASK_COMM2_SEND_STK_SIZE];
+static OS_STK    TaskComm1SendStk[TASK_COMM1_SEND_STK_SIZE];
 //static OS_STK    TaskComm3SendStk[TASK_COMM3_SEND_STK_SIZE];
 
 OS_EVENT *Sem_Comm1Rece;
 OS_EVENT *Sem_Comm2Rece;
 OS_EVENT *Sem_Comm3Rece;
 //OS_EVENT *Sem_Comm1Send;
-OS_EVENT *Sem_Comm2Send;
+OS_EVENT *Sem_Comm1Send;
 //OS_EVENT *Sem_Comm3Send;
 
 //chunjie
+void timer_100ms_callback(OS_TMR *ptmr, void *p_arg);
 OS_TMR   *timer_100ms;
 OS_TMR   *timer_50ms;
 u8      comm1_master_wait_time_out;
@@ -68,7 +70,7 @@ static void TaskComm1Send(void *p_arg);
 //static void TaskComm3Send(void *p_arg);
 
 //Chunjie
-extern void tmr100ms_callback(OS_TMR *ptmr, void *p_arg);
+//extern void tmr100ms_callback(OS_TMR *ptmr, void *p_arg);
 /* Private functions ---------------------------------------------------------*/
 /*******************************************************************************
 * Function Name  : main(void)
@@ -96,6 +98,8 @@ int main(void)
 *******************************************************************************/
 static void TaskCreate(void *p_arg)
 {
+    u8 err;
+    u8 p[12] = "timer_100ms";
   (void)p_arg;
 
 	BSP_Config();
@@ -104,10 +108,13 @@ static void TaskCreate(void *p_arg)
   #if (OS_TASK_STAT_EN > 0)
 	OSStatInit();
   #endif
+  
+    timer_100ms=OSTmrCreate(10,10,OS_TMR_OPT_PERIODIC,(OS_TMR_CALLBACK)timer_100ms_callback,0,p,&err);
 
+ 
   OSTaskCreate(TaskFunction,(void*)0,&TaskFunctionStk[TASK_FUNCTION_STK_SIZE-1],TASK_FUNCTION_PRIO);
   OSTaskCreate(TaskLogic,(void*)0,&TaskLogicStk[TASK_LOGIC_STK_SIZE-1],TASK_LOGIC_PRIO); // PID control
-//  OSTaskCreate(TaskMMI,(void*)0,&TaskMMIStk[TASK_MMI_STK_SIZE-1],TASK_MMI_PRIO);
+ // OSTaskCreate(TaskMMI,(void*)0,&TaskMMIStk[TASK_MMI_STK_SIZE-1],TASK_MMI_PRIO);
 //2016.1.24
   OSTaskCreate(TaskComm1Rece,(void*)0,&TaskComm1ReceStk[TASK_COMM1_RECE_STK_SIZE-1],TASK_COMM1_RECE_PRIO);
   OSTaskCreate(TaskComm2Rece,(void*)0,&TaskComm2ReceStk[TASK_COMM2_RECE_STK_SIZE-1],TASK_COMM2_RECE_PRIO);
@@ -115,18 +122,18 @@ static void TaskCreate(void *p_arg)
   OSTaskCreate(TaskComm3Rece,(void*)0,&TaskComm3ReceStk[TASK_COMM3_RECE_STK_SIZE-1],TASK_COMM3_RECE_PRIO);
 //2016.1.24
 //  OSTaskCreate(TaskComm1Send,(void*)0,&TaskComm1SendStk[TASK_COMM1_SEND_STK_SIZE-1],TASK_COMM1_SEND_PRIO);
-  OSTaskCreate(TaskComm1Send,(void*)0,&TaskComm1SendStk[TASK_COMM1_SEND_STK_SIZE-1],TASK_COMM1_SEND_PRIO);
+ // OSTaskCreate(TaskComm1Send,(void*)0,&TaskComm1SendStk[TASK_COMM1_SEND_STK_SIZE-1],TASK_COMM1_SEND_PRIO);
 //2016.1.24
 //  OSTaskCreate(TaskComm3Send,(void*)0,&TaskComm3SendStk[TASK_COMM3_SEND_STK_SIZE-1],TASK_COMM3_SEND_PRIO);
 
 
 //	Sem_Comm1Send = OSSemCreate(0);
 	Sem_Comm1Rece = OSSemCreate(0);
-	Sem_Comm2Send = OSSemCreate(0);
+//	Sem_Comm1Send = OSSemCreate(0);
 	Sem_Comm2Rece = OSSemCreate(0);
 //	Sem_Comm3Send = OSSemCreate(0);
 	Sem_Comm3Rece = OSSemCreate(0);
-
+OSTmrStart(timer_100ms, &err); //Start timer
     while(1)
     {
        OSTaskSuspend(OS_PRIO_SELF);
@@ -361,6 +368,7 @@ static void TaskComm2Rece(void *p_arg)
 }
 
 //chunjie
+/*
 static void TaskComm1Send(void *p_arg)
 {
 	u8 err;
@@ -370,11 +378,11 @@ static void TaskComm1Send(void *p_arg)
 
 	while(1)
 	{
-		OSSemPend(Sem_Comm2Send,0,&err);
+		OSSemPend(Sem_Comm1Send,0,&err);
 		P_Comm1_Send_Handle();
 	}
 }
-
+*/
 static void TaskComm1Rece(void *p_arg)
 {
 	u8 err;
@@ -442,7 +450,11 @@ static void TaskMMI(void *p_arg)
 //chunjie
 
 //------------ Timer --------------------------------
+
 void timer_100ms_callback(OS_TMR *ptmr, void *p_arg) {
-    comm2_master_wait_time_out = 1;
-    Sys_Run_LED(~led_on & 0x01);
+    u8 err;
+    comm1_master_wait_time_out = 1;
+   Sys_Run_LED(led_on & 0x01);
+    led_on = ~led_on;
+    // OSTmrStart(timer_100ms, &err); //Start timer
 }
