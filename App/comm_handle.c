@@ -161,27 +161,29 @@ void P_Comm3_Handle(void)
 }
 
 // By chunjie 2018-4-1
-void P_Comm2_Send_Handle (void) {
+void P_Comm1_Send_Handle (void) {
     u8 err;
     u8 time_out_tmp, recv_complete_tmp;
    // comm2_master_complete_recv = 0;
     OS_CPU_SR  cpu_sr = 0;
     MMSenDFuncode03Frame(0x30, 0x00, 2);
     OSTmrStart(timer_100ms, &err); //Start timer
-    
+
     while(!time_out_tmp | !recv_complete_tmp) {
-      time_out_tmp = comm2_master_wait_time_out;
-      recv_complete_tmp = comm2_master_complete_recv;
+      time_out_tmp = comm1_master_wait_time_out;
+      recv_complete_tmp = comm1_master_complete_recv;
     }
 
     if (recv_complete_tmp) {
-      comm2_master_complete_recv = 0;
+      comm1_master_complete_recv = 0;
       printf("Success to Receive.\n");
     }
     else if (time_out_tmp) {
-      printf("COMM2 Master send timeout.\n");
+      printf("COMM1 Master send timeout.\n");
     }
-    
+
+    OSTimeDlyHMSM(0,0,0,3000);
+
 
 }
 
@@ -482,7 +484,7 @@ void P_Comm1_Handle(void)
  void MMSenDFuncode03Frame(u8 SlaveAddress,uint16_t RegStar_Address,u16 RegLen)
  {      OS_CPU_SR  cpu_sr = 0;
         u16 data_crc_temp = 0;
-        COMM_DATA comm2_fun03_sendbuf;
+        COMM_DATA comm1_fun03_sendbuf;
         //Master.ModbusAdd=SlaveAddress;
 
         //Master.SendDataBuf[0] = SlaveAddress;  //
@@ -492,32 +494,32 @@ void P_Comm1_Handle(void)
         //Master.SendDataBuf[4] =((RegLen & 0xff00)>>8);     //
         //Master.SendDataBuf[5] =(RegLen & 0x00ff);     //
 
-        comm2_fun03_sendbuf.DataBuf[0] = SlaveAddress;
-        comm2_fun03_sendbuf.DataBuf[1] = 0x03;
+        comm1_fun03_sendbuf.DataBuf[0] = SlaveAddress;
+        comm1_fun03_sendbuf.DataBuf[1] = 0x03;
         //起始地址
-        comm2_fun03_sendbuf.DataBuf[2] =((RegStar_Address & 0xff00)>>8);//
-        comm2_fun03_sendbuf.DataBuf[3] =(RegStar_Address & 0x00ff); //
+        comm1_fun03_sendbuf.DataBuf[2] =((RegStar_Address & 0xff00)>>8);//
+        comm1_fun03_sendbuf.DataBuf[3] =(RegStar_Address & 0x00ff); //
         // 寄存器数量
-        comm2_fun03_sendbuf.DataBuf[4] =((RegLen & 0xff00)>>8);     //
-        comm2_fun03_sendbuf.DataBuf[5] =(RegLen & 0x00ff);     //
+        comm1_fun03_sendbuf.DataBuf[4] =((RegLen & 0xff00)>>8);     //
+        comm1_fun03_sendbuf.DataBuf[5] =(RegLen & 0x00ff);     //
 
         // What is the length incluing CRC
-        comm2_fun03_sendbuf.DataLong    = 8;
-        comm2_fun03_sendbuf.CommChannel = 2;
-        comm2_fun03_sendbuf.DataCount   = 0;
-        comm2_fun03_sendbuf.OK          = 1;
+        comm1_fun03_sendbuf.DataLong    = 8;
+        comm1_fun03_sendbuf.CommChannel = 2;
+        comm1_fun03_sendbuf.DataCount   = 0;
+        comm1_fun03_sendbuf.OK          = 1;
 
 
-        data_crc_temp = Get_CRC(&comm2_fun03_sendbuf.DataBuf[0], (comm2_fun03_sendbuf.DataLong - 2));
+        data_crc_temp = Get_CRC(&comm1_fun03_sendbuf.DataBuf[0], (comm1_fun03_sendbuf.DataLong - 2));
 
-        comm2_fun03_sendbuf.DataBuf[comm2_fun03_sendbuf.DataLong - 2] = (u8)(data_crc_temp >> 8 & 0x00FF);
-        comm2_fun03_sendbuf.DataBuf[comm2_fun03_sendbuf.DataLong - 1] = (u8)(data_crc_temp      & 0x00FF);
+        comm1_fun03_sendbuf.DataBuf[comm1_fun03_sendbuf.DataLong - 2] = (u8)(data_crc_temp >> 8 & 0x00FF);
+        comm1_fun03_sendbuf.DataBuf[comm1_fun03_sendbuf.DataLong - 1] = (u8)(data_crc_temp      & 0x00FF);
 
         OS_ENTER_CRITICAL();
-        memcpy(&COMM3_SendBuf,&comm2_fun03_sendbuf,sizeof(comm2_fun03_sendbuf));
+        memcpy(&COMM2_SendBuf,&comm1_fun03_sendbuf,sizeof(comm1_fun03_sendbuf));
         OS_EXIT_CRITICAL();
 
-        BSP_COMM_Send(COMM3_SendBuf);
+        BSP_COMM_Send(COMM2_SendBuf);
 
  }
   /*--------------------------------------------------------------------

@@ -24,7 +24,7 @@
 #define	TASK_COMM2_RECE_PRIO		5
 #define	TASK_COMM3_RECE_PRIO		6
 //#define	TASK_COMM1_SEND_PRIO		10
-#define	TASK_COMM2_SEND_PRIO		11
+#define	TASK_COMM1_SEND_PRIO		11
 //#define	TASK_COMM3_SEND_PRIO		12
 //chunjie
 //#define OS_TASK_TMR_PRIO           (OS_LOWEST_PRIO - 2)
@@ -38,16 +38,16 @@
 #define	TASK_COMM1_RECE_STK_SIZE    2048
 #define	TASK_COMM2_RECE_STK_SIZE    2048
 #define	TASK_COMM3_RECE_STK_SIZE    2048
-#define	TASK_COMM2_SEND_STK_SIZE    2048
+#define	TASK_COMM1_SEND_STK_SIZE    2048
 extern OS_EVENT *Sem_Comm1Rece;
 extern OS_EVENT *Sem_Comm2Rece;
 extern OS_EVENT *Sem_Comm3Rece;
 extern OS_EVENT *Sem_Comm2Send;
 //chunjie
 
-extern u8 comm2_master_wait_time_out;
-extern u8 comm2_master_complete_send;
-extern u8 comm2_master_complete_recv;
+extern u8 comm1_master_wait_time_out;
+extern u8 comm1_master_complete_send;
+extern u8 comm1_master_complete_recv;
 extern OS_TMR   *timer_100ms;
 extern OS_TMR   *timer_50ms;
 //extern OS_EVENT *Sem_Comm1Send;

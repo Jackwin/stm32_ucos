@@ -22,7 +22,7 @@
 extern void P_Comm3_Handle(void);
 extern void P_Comm2_Handle(void);
 extern void P_Comm1_Handle(void);
-extern void P_Comm2_Send_Handle (void);
+extern void P_Comm1_Send_Handle (void);
 extern void MMSenDFuncode03Frame(u8 SlaveAddress,u16 RegStar_Address,u16 RegLen);
 
 #endif /* __comm_handle_H */

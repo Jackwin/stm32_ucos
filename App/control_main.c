@@ -48,9 +48,10 @@ OS_EVENT *Sem_Comm2Send;
 //chunjie
 OS_TMR   *timer_100ms;
 OS_TMR   *timer_50ms;
-u8      comm2_master_wait_time_out;
-u8 		comm2_master_complete_send;
-u8 		comm2_master_complete_recv;
+u8      comm1_master_wait_time_out;
+u8 		comm1_master_complete_send;
+u8 		comm1_master_complete_recv;
+u8      led_on = 0;
 
 /* Private function ----------------------------------------------------------*/
 static void TaskCreate(void *p_arg);
@@ -63,7 +64,7 @@ static void TaskComm1Rece(void *p_arg);
 static void TaskComm2Rece(void *p_arg);
 static void TaskComm3Rece(void *p_arg);
 //static void TaskComm1Send(void *p_arg);
-static void TaskComm2Send(void *p_arg);
+static void TaskComm1Send(void *p_arg);
 //static void TaskComm3Send(void *p_arg);
 
 //Chunjie
@@ -106,7 +107,7 @@ static void TaskCreate(void *p_arg)
 
   OSTaskCreate(TaskFunction,(void*)0,&TaskFunctionStk[TASK_FUNCTION_STK_SIZE-1],TASK_FUNCTION_PRIO);
   OSTaskCreate(TaskLogic,(void*)0,&TaskLogicStk[TASK_LOGIC_STK_SIZE-1],TASK_LOGIC_PRIO); // PID control
-  OSTaskCreate(TaskMMI,(void*)0,&TaskMMIStk[TASK_MMI_STK_SIZE-1],TASK_MMI_PRIO);
+//  OSTaskCreate(TaskMMI,(void*)0,&TaskMMIStk[TASK_MMI_STK_SIZE-1],TASK_MMI_PRIO);
 //2016.1.24
   OSTaskCreate(TaskComm1Rece,(void*)0,&TaskComm1ReceStk[TASK_COMM1_RECE_STK_SIZE-1],TASK_COMM1_RECE_PRIO);
   OSTaskCreate(TaskComm2Rece,(void*)0,&TaskComm2ReceStk[TASK_COMM2_RECE_STK_SIZE-1],TASK_COMM2_RECE_PRIO);
@@ -114,7 +115,7 @@ static void TaskCreate(void *p_arg)
   OSTaskCreate(TaskComm3Rece,(void*)0,&TaskComm3ReceStk[TASK_COMM3_RECE_STK_SIZE-1],TASK_COMM3_RECE_PRIO);
 //2016.1.24
 //  OSTaskCreate(TaskComm1Send,(void*)0,&TaskComm1SendStk[TASK_COMM1_SEND_STK_SIZE-1],TASK_COMM1_SEND_PRIO);
-  OSTaskCreate(TaskComm2Send,(void*)0,&TaskComm2SendStk[TASK_COMM2_SEND_STK_SIZE-1],TASK_COMM2_SEND_PRIO);
+  OSTaskCreate(TaskComm1Send,(void*)0,&TaskComm1SendStk[TASK_COMM1_SEND_STK_SIZE-1],TASK_COMM1_SEND_PRIO);
 //2016.1.24
 //  OSTaskCreate(TaskComm3Send,(void*)0,&TaskComm3SendStk[TASK_COMM3_SEND_STK_SIZE-1],TASK_COMM3_SEND_PRIO);
 
@@ -358,9 +359,9 @@ static void TaskComm2Rece(void *p_arg)
 		P_Comm2_Handle();
 	}
 }
-	
+
 //chunjie
-static void TaskComm2Send(void *p_arg)
+static void TaskComm1Send(void *p_arg)
 {
 	u8 err;
 
@@ -370,7 +371,7 @@ static void TaskComm2Send(void *p_arg)
 	while(1)
 	{
 		OSSemPend(Sem_Comm2Send,0,&err);
-		P_Comm2_Send_Handle();
+		P_Comm1_Send_Handle();
 	}
 }
 
@@ -382,8 +383,11 @@ static void TaskComm1Rece(void *p_arg)
 
 	while(1)
 	{
+
 		OSSemPend(Sem_Comm1Rece,0,&err);
 		P_Comm1_Handle();
+        // delay 5s
+        OSTimeDlyHMSM(0,0,5,0);
 	}
 }
 
@@ -440,4 +444,5 @@ static void TaskMMI(void *p_arg)
 //------------ Timer --------------------------------
 void timer_100ms_callback(OS_TMR *ptmr, void *p_arg) {
     comm2_master_wait_time_out = 1;
+    Sys_Run_LED(~led_on & 0x01);
 }
