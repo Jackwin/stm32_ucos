@@ -42,8 +42,10 @@ static OS_STK    TaskComm1SendStk[TASK_COMM1_SEND_STK_SIZE];
 OS_EVENT *Sem_Comm1Rece;
 OS_EVENT *Sem_Comm2Rece;
 OS_EVENT *Sem_Comm3Rece;
+
 //OS_EVENT *Sem_Comm1Send;
 OS_EVENT *Sem_Comm1Send;
+OS_EVENT *Sem_Com3Send;
 //OS_EVENT *Sem_Comm3Send;
 
 //chunjie
@@ -67,6 +69,7 @@ static void TaskComm2Rece(void *p_arg);
 static void TaskComm3Rece(void *p_arg);
 //static void TaskComm1Send(void *p_arg);
 static void TaskComm1Send(void *p_arg);
+//static void TaskC
 //static void TaskComm3Send(void *p_arg);
 
 //Chunjie
@@ -114,26 +117,26 @@ static void TaskCreate(void *p_arg)
  
   OSTaskCreate(TaskFunction,(void*)0,&TaskFunctionStk[TASK_FUNCTION_STK_SIZE-1],TASK_FUNCTION_PRIO);
   OSTaskCreate(TaskLogic,(void*)0,&TaskLogicStk[TASK_LOGIC_STK_SIZE-1],TASK_LOGIC_PRIO); // PID control
- // OSTaskCreate(TaskMMI,(void*)0,&TaskMMIStk[TASK_MMI_STK_SIZE-1],TASK_MMI_PRIO);
+  OSTaskCreate(TaskMMI,(void*)0,&TaskMMIStk[TASK_MMI_STK_SIZE-1],TASK_MMI_PRIO);
 //2016.1.24
   OSTaskCreate(TaskComm1Rece,(void*)0,&TaskComm1ReceStk[TASK_COMM1_RECE_STK_SIZE-1],TASK_COMM1_RECE_PRIO);
   OSTaskCreate(TaskComm2Rece,(void*)0,&TaskComm2ReceStk[TASK_COMM2_RECE_STK_SIZE-1],TASK_COMM2_RECE_PRIO);
 //2016.1.24
   OSTaskCreate(TaskComm3Rece,(void*)0,&TaskComm3ReceStk[TASK_COMM3_RECE_STK_SIZE-1],TASK_COMM3_RECE_PRIO);
 //2016.1.24
-//  OSTaskCreate(TaskComm1Send,(void*)0,&TaskComm1SendStk[TASK_COMM1_SEND_STK_SIZE-1],TASK_COMM1_SEND_PRIO);
+  //OSTaskCreate(TaskComm1Send,(void*)0,&TaskComm1SendStk[TASK_COMM1_SEND_STK_SIZE-1],TASK_COMM1_SEND_PRIO);
  // OSTaskCreate(TaskComm1Send,(void*)0,&TaskComm1SendStk[TASK_COMM1_SEND_STK_SIZE-1],TASK_COMM1_SEND_PRIO);
 //2016.1.24
 //  OSTaskCreate(TaskComm3Send,(void*)0,&TaskComm3SendStk[TASK_COMM3_SEND_STK_SIZE-1],TASK_COMM3_SEND_PRIO);
 
 
-//	Sem_Comm1Send = OSSemCreate(0);
+	//Sem_Comm1Send = OSSemCreate(0);
 	Sem_Comm1Rece = OSSemCreate(0);
 //	Sem_Comm1Send = OSSemCreate(0);
 	Sem_Comm2Rece = OSSemCreate(0);
 //	Sem_Comm3Send = OSSemCreate(0);
 	Sem_Comm3Rece = OSSemCreate(0);
-OSTmrStart(timer_100ms, &err); //Start timer
+//OSTmrStart(timer_100ms, &err); //Start timer
     while(1)
     {
        OSTaskSuspend(OS_PRIO_SELF);
@@ -368,7 +371,7 @@ static void TaskComm2Rece(void *p_arg)
 }
 
 //chunjie
-/*
+
 static void TaskComm1Send(void *p_arg)
 {
 	u8 err;
@@ -380,9 +383,10 @@ static void TaskComm1Send(void *p_arg)
 	{
 		OSSemPend(Sem_Comm1Send,0,&err);
 		P_Comm1_Send_Handle();
+        OSTimeDlyHMSM(0,0,5,0);
 	}
 }
-*/
+
 static void TaskComm1Rece(void *p_arg)
 {
 	u8 err;
@@ -395,17 +399,24 @@ static void TaskComm1Rece(void *p_arg)
 		OSSemPend(Sem_Comm1Rece,0,&err);
 		P_Comm1_Handle();
         // delay 5s
-        OSTimeDlyHMSM(0,0,5,0);
+        //OSTimeDlyHMSM(0,0,5,0);
 	}
 }
 
 static void TaskMMI(void *p_arg)
 {
 	(void)p_arg;
-
+    
 	while(1)
 	{
-		P_Function_RunStatus(500);
+		//P_Function_RunStatus(500);
+        OSTimeDlyHMSM(0,0,5,0);
+         // Read AI
+        //MMSenDFuncode03Frame(0x1,0xc8,1);
+        // Read all DO
+        MMSenDFuncode03Frame(0x1,0x12c,0x00);
+    
+            
 
 #if 0
 		COMM2_SendBuf.DataBuf[0] = 0x55;

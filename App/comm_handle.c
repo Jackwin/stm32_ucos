@@ -39,6 +39,7 @@ void P_Comm3_Handle(void)
     static COMM_DATA comm3_recebuf_temp;
     static COMM_DATA comm3_sendbuf_temp;
     u16 *pdes;
+    u8 err;
 
     OS_ENTER_CRITICAL();
     sys_number_temp = (u8)ALL_DATA_RAM[SYS_NUMBER_BASE];
@@ -46,7 +47,7 @@ void P_Comm3_Handle(void)
     COMM3_ReceBuf.DataCount = 0;
     COMM3_ReceBuf.DataLong  = 0;
     OS_EXIT_CRITICAL();
-
+    
     data_crc_temp = Get_CRC(&comm3_recebuf_temp.DataBuf[0], (comm3_recebuf_temp.DataLong - 2));
     if(data_crc_temp == (u16)(((u16)comm3_recebuf_temp.DataBuf[comm3_recebuf_temp.DataLong - 2] << 8) | (comm3_recebuf_temp.DataBuf[comm3_recebuf_temp.DataLong - 1])))
     {
@@ -166,8 +167,8 @@ void P_Comm1_Send_Handle (void) {
     u8 time_out_tmp, recv_complete_tmp;
    // comm2_master_complete_recv = 0;
     OS_CPU_SR  cpu_sr = 0;
-    MMSenDFuncode03Frame(0x30, 0x00, 2);
-    //OSTmrStart(timer_100ms, &err); //Start timer
+    MMSenDFuncode03Frame(0x01, 0x00c8, 1);
+    OSTmrStart(timer_100ms, &err); //Start timer
 
     while(!time_out_tmp | !recv_complete_tmp) {
       time_out_tmp = comm1_master_wait_time_out;
@@ -182,7 +183,7 @@ void P_Comm1_Send_Handle (void) {
       printf("COMM1 Master send timeout.\n");
     }
 
-    OSTimeDlyHMSM(0,0,0,3000);
+    OSTimeDlyHMSM(0,0,1,0);
 
 
 }
@@ -340,7 +341,7 @@ void P_Comm2_Handle(void)
 void P_Comm1_Handle(void)
 {
     OS_CPU_SR  cpu_sr = 0;
-
+    u8 err;
     u8  i = 0;
     u8  sys_number_temp = 0;
     u16 data_crc_temp = 0;
@@ -361,7 +362,7 @@ void P_Comm1_Handle(void)
     COMM1_ReceBuf.DataCount = 0;
     COMM1_ReceBuf.DataLong  = 0;
     OS_EXIT_CRITICAL();
-
+    OSTmrStart(timer_100ms, &err); //Start timer
     data_crc_temp = Get_CRC(&comm1_recebuf_temp.DataBuf[0], (comm1_recebuf_temp.DataLong - 2));
     if(data_crc_temp == (u16)(((u16)comm1_recebuf_temp.DataBuf[comm1_recebuf_temp.DataLong - 2] << 8) | (comm1_recebuf_temp.DataBuf[comm1_recebuf_temp.DataLong - 1])))
     {
@@ -495,7 +496,7 @@ void P_Comm1_Handle(void)
         //Master.SendDataBuf[5] =(RegLen & 0x00ff);     //
 
         comm1_fun03_sendbuf.DataBuf[0] = SlaveAddress;
-        comm1_fun03_sendbuf.DataBuf[1] = 0x03;
+        comm1_fun03_sendbuf.DataBuf[1] = 0x06;
         //起始地址
         comm1_fun03_sendbuf.DataBuf[2] =((RegStar_Address & 0xff00)>>8);//
         comm1_fun03_sendbuf.DataBuf[3] =(RegStar_Address & 0x00ff); //
@@ -505,7 +506,7 @@ void P_Comm1_Handle(void)
 
         // What is the length incluing CRC
         comm1_fun03_sendbuf.DataLong    = 8;
-        comm1_fun03_sendbuf.CommChannel = 2;
+        comm1_fun03_sendbuf.CommChannel = 1;
         comm1_fun03_sendbuf.DataCount   = 0;
         comm1_fun03_sendbuf.OK          = 1;
 
@@ -516,10 +517,10 @@ void P_Comm1_Handle(void)
         comm1_fun03_sendbuf.DataBuf[comm1_fun03_sendbuf.DataLong - 1] = (u8)(data_crc_temp      & 0x00FF);
 
         OS_ENTER_CRITICAL();
-        memcpy(&COMM2_SendBuf,&comm1_fun03_sendbuf,sizeof(comm1_fun03_sendbuf));
+        memcpy(&COMM1_SendBuf,&comm1_fun03_sendbuf,sizeof(comm1_fun03_sendbuf));
         OS_EXIT_CRITICAL();
 
-        BSP_COMM_Send(COMM2_SendBuf);
+        BSP_COMM_Send(COMM1_SendBuf);
 
  }
   /*--------------------------------------------------------------------

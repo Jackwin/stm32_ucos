@@ -23,8 +23,8 @@
 #define	TASK_COMM1_RECE_PRIO		4
 #define	TASK_COMM2_RECE_PRIO		5
 #define	TASK_COMM3_RECE_PRIO		6
-//#define	TASK_COMM1_SEND_PRIO		10
 #define	TASK_COMM1_SEND_PRIO		11
+//#define	TASK_COMM1_SEND_PRIO		11
 //#define	TASK_COMM3_SEND_PRIO		12
 //chunjie
 //#define OS_TASK_TMR_PRIO           (OS_LOWEST_PRIO - 2)

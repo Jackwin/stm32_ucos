@@ -102,12 +102,14 @@ void SysTick_Handler(void)
 		COMM1_SendBuf.FrameDelayMS--;
         comm1_master_complete_send = 0;
 	}
-    else if (COMM1_SendBuf.OK == 0) {
-        COMM1_ReceBuf.OK = 1;
+    
+    if (COMM1_SendBuf.OK == 0 && (COMM1_SendBuf.DataCount >= COMM1_SendBuf.DataLong)) {
+        //COMM1_SendBuf.OK = 1;
         comm1_master_complete_send = 1;
-        BSP_Comm_Idle_Mode(2);
+        BSP_Comm_Idle_Mode(1);
         OSSemPost(Sem_Comm1Send);
-    }*/
+    }
+    */
 #if 1	
 	if(COMM2_ReceBuf.FrameDelayMS != 0)
 	{

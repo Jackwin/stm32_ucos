@@ -103,7 +103,7 @@ void BSP_Comm_Idle_Mode(u8 commx);
 *******************************************************************************/
 void BSP_Comm_Config(void)
 {
-	BSP_Comm1_Init(9600);
+	BSP_Comm1_Init(115200);
 	BSP_Comm2_Init(115200);
 	BSP_Comm3_Init(115200);
 	BSP_Comm_State_Init();
