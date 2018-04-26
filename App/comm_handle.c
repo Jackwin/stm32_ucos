@@ -73,8 +73,10 @@ void P_Comm3_Handle(void)
                   for(i=0; i<num_of_registers_temp; i++)
                     {
                         OS_ENTER_CRITICAL();
-                        comm3_sendbuf_temp.DataBuf[(i<<1)+3] = (u8)(ALL_DATA_RAM[starting_target_addr_temp+i] >> 8);
-                        comm3_sendbuf_temp.DataBuf[(i<<1)+4] = (u8)(ALL_DATA_RAM[starting_target_addr_temp+i]);
+                        //comm3_sendbuf_temp.DataBuf[(i<<1)+3] = (u8)(ALL_DATA_RAM[starting_target_addr_temp+i] >> 8);
+                        //comm3_sendbuf_temp.DataBuf[(i<<1)+4] = (u8)(ALL_DATA_RAM[starting_target_addr_temp+i]);
+                        comm3_sendbuf_temp.DataBuf[3] = (u8)(ALL_DATA_RAM[starting_target_addr_temp] >> 8);
+                        comm3_sendbuf_temp.DataBuf[4] = (u8)(ALL_DATA_RAM[starting_target_addr_temp]);
                         OS_EXIT_CRITICAL();
                     }
 
@@ -352,7 +354,8 @@ void P_Comm1_Handle(void)
     static COMM_DATA comm1_sendbuf_temp;
 
     OS_ENTER_CRITICAL();
-    sys_number_temp = (u8)ALL_DATA_RAM[SYS_NUMBER_BASE];
+    //sys_number_temp = (u8)ALL_DATA_RAM[SYS_NUMBER_BASE];
+    sys_number_temp = 0x01;
     memcpy(&comm1_recebuf_temp,&COMM1_ReceBuf,sizeof(COMM1_ReceBuf));
     COMM1_ReceBuf.DataBuf[0] = 0x00;
     COMM1_ReceBuf.DataBuf[1] = 0x00;
@@ -385,11 +388,16 @@ void P_Comm1_Handle(void)
                   comm1_sendbuf_temp.DataCount   = 0;
                   comm1_sendbuf_temp.OK          = 1;
 
+                  OS_ENTER_CRITICAL();
+                  ALL_DATA_RAM[RECV1_ADDR] = comm1_recebuf_temp.DataBuf[3] << 8 | comm1_recebuf_temp.DataBuf[4];
+                  OS_EXIT_CRITICAL();
+                  
                   for(i=0; i<num_of_registers_temp; i++)
                     {
                         OS_ENTER_CRITICAL();
                         comm1_sendbuf_temp.DataBuf[(i<<1)+3] = (u8)(ALL_DATA_RAM[starting_target_addr_temp+i] >> 8);
                         comm1_sendbuf_temp.DataBuf[(i<<1)+4] = (u8)(ALL_DATA_RAM[starting_target_addr_temp+i]);
+                        
                         OS_EXIT_CRITICAL();
                     }
 

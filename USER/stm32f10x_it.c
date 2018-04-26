@@ -110,7 +110,7 @@ void SysTick_Handler(void)
         OSSemPost(Sem_Comm1Send);
     }
     */
-#if 1	
+//#if 1	
 	if(COMM2_ReceBuf.FrameDelayMS != 0)
 	{
 		COMM2_ReceBuf.FrameDelayMS --;
@@ -132,7 +132,7 @@ void SysTick_Handler(void)
 		BSP_Comm_Idle_Mode(1);
 		OSSemPost(Sem_Comm1Rece);
 	}
-#endif	
+//#endif	
 	OS_EXIT_CRITICAL();
 
 	OSTimeTick();

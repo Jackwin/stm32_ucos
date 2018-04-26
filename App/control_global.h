@@ -391,12 +391,34 @@
 #define  PID_DEBUG_4                                (PID_PARAMETER_BASE + 56U)
 #define  PID_DEBUG_5                                (PID_PARAMETER_BASE + 57U)
 #define  PID_DEBUG_6                                (PID_PARAMETER_BASE + 58U)
-       
+
 
 #define  DO_IIC_BASE											0x400U
 #define  DO_ADDR_LO 											DO_IIC_BASE
 #define  DO_ADDR_HI												(DO_IIC_BASE + 1U)
 
+//chunjie
+
+#define RECV1_ADDR									(TPK_PARA_BASE + 59U)
+#define SPEICAL_REG_BASE 							(TPK_PARA_BASE + 60U)
+#define MODULE_ADDR 								(SPEICAL_REG_BASE + 1U)
+#define HEART_BEAT_ADDR 							(SPEICAL_REG_BASE + 2U)
+#define YEAR_ADDR 									(SPEICAL_REG_BASE + 3U)
+#define MONTH_ADDR 									(SPEICAL_REG_BASE + 4U)
+#define DATA_CAPTURE_ADDR 							(SPEICAL_REG_BASE + 5U)
+#define HOUR_ADDR  									(SPEICAL_REG_BASE + 6U)
+#define MINUTE_ADDR 								(SPEICAL_REG_BASE + 7U)
+#define SECOND_ADDR  								(SPEICAL_REG_BASE + 8U)
+#define FAULT_STATE_REG								(SPEICAL_REG_BASE + 9U)
+#define FAKE_MS										(SPEICAL_REG_BASE + 10U)
+#define FAKE_MIN 									(SPEICAL_REG_BASE + 11U)
+#define FAKE_DAY 									(SPEICAL_REG_BASE + 12U)
+#define BIT_CONFIG_ADDR 							(SPEICAL_REG_BASE + 13U)
+#define REBOOT_ADDR 								(SPEICAL_REG_BASE + 14U)
+#define FILTER_ADDR									(SPEICAL_REG_BASE + 15U)
+#define TIMER_ADDR 									(SPEICAL_REG_BASE + 16U)
+#define DATA_CAPTURE_ADDR 							(SPEICAL_REG_BASE + 17U)
+#define BAUD_RATE_ADDR 								(SPEICAL_REG_BASE + 18U)
 
 /* GPIO Pin sources ----------------------------------------------------------*/
 /* Exported variables ------------------------------------------------------------*/
