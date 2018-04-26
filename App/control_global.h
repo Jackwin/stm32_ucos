@@ -12,7 +12,7 @@
 #define __CONTROL_GLOBAL_H
 
 /* Includes ------------------------------------------------------------------*/
-#include "stm32f10x_it.h" 
+#include "stm32f10x_it.h"
 /* Exported types ------------------------------------------------------------*/
 //extern u16 DEBUG_ERROR;
 /* Exported constants --------------------------------------------------------*/
@@ -280,7 +280,7 @@
 #define WINTER_INDOOR_TEMPERATURE_SET_BASE              (TPK_PARA_BASE + 42U)
 #define WINTER_DIF_PRESSURE_MAX_SET_BASE			    (TPK_PARA_BASE + 43U)
 #define WINTER_DIF_PRESSURE_MIN_SET_BASE                (TPK_PARA_BASE + 44U)
-#define WINTER_FREQUENCY_MAX_SET_BASE                   (TPK_PARA_BASE + 45U)                
+#define WINTER_FREQUENCY_MAX_SET_BASE                   (TPK_PARA_BASE + 45U)
 #define WINTER_FREQUENCY_MIN_SET_BASE                   (TPK_PARA_BASE + 46U)
 #define WINTER_STARTPOINT_OUTDOOR_TEMPERATURE_SET_BASE  (TPK_PARA_BASE + 47U)
 #define WINTER_WATER_SUPPLY_MAX_TEMPERATURE_SET_BASE    (TPK_PARA_BASE + 48U)
@@ -290,7 +290,7 @@
 #define SUMMER_INDOOR_TEMPERATURE_SET_BASE              (TPK_PARA_BASE + 51U)
 #define SUMMER_DIF_PRESSURE_MAX_SET_BASE			    (TPK_PARA_BASE + 52U)
 #define SUMMER_DIF_PRESSURE_MIN_SET_BASE                (TPK_PARA_BASE + 53U)
-#define SUMMER_FREQUENCY_MAX_SET_BASE                   (TPK_PARA_BASE + 54U)               
+#define SUMMER_FREQUENCY_MAX_SET_BASE                   (TPK_PARA_BASE + 54U)
 #define SUMMER_FREQUENCY_MIN_SET_BASE                   (TPK_PARA_BASE + 55U)
 #define SUMMER_STARTPOINT_OUTDOOR_TEMPERATURE_SET_BASE  (TPK_PARA_BASE + 56U)
 #define SUMMER_WATER_SUPPLY_MAX_TEMPERATURE_SET_BASE    (TPK_PARA_BASE + 17U)
@@ -396,6 +396,10 @@
 #define  DO_IIC_BASE											0x400U
 #define  DO_ADDR_LO 											DO_IIC_BASE
 #define  DO_ADDR_HI												(DO_IIC_BASE + 1U)
+// chunjie
+#define  SPEICAL_REG_IIC_BASE                                   0x460U
+#define  MODULE_IIC_ADDR_LOW                                    SPEICAL_REG_IIC_BASE
+#define  MODULE_IIC_ADDR_HI                                     (SPEICAL_REG_IIC_BASE + 1U)
 
 //chunjie
 
@@ -410,7 +414,7 @@
 #define MINUTE_ADDR 								(SPEICAL_REG_BASE + 7U)
 #define SECOND_ADDR  								(SPEICAL_REG_BASE + 8U)
 #define FAULT_STATE_REG								(SPEICAL_REG_BASE + 9U)
-#define FAKE_MS										(SPEICAL_REG_BASE + 10U)
+#define FAKE_S										(SPEICAL_REG_BASE + 10U)
 #define FAKE_MIN 									(SPEICAL_REG_BASE + 11U)
 #define FAKE_DAY 									(SPEICAL_REG_BASE + 12U)
 #define BIT_CONFIG_ADDR 							(SPEICAL_REG_BASE + 13U)
@@ -419,6 +423,9 @@
 #define TIMER_ADDR 									(SPEICAL_REG_BASE + 16U)
 #define DATA_CAPTURE_ADDR 							(SPEICAL_REG_BASE + 17U)
 #define BAUD_RATE_ADDR 								(SPEICAL_REG_BASE + 18U)
+#define SPEICAL_REG_END                             (SPEICAL_REG_BASE + 18U)
+
+
 
 /* GPIO Pin sources ----------------------------------------------------------*/
 /* Exported variables ------------------------------------------------------------*/

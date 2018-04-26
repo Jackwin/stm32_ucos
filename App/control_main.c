@@ -22,6 +22,7 @@
 #include "delay.h"
 #include "comm_handle.h"
 #include "control_do.h"
+#include "24cxx.h"
 //Ó¦ÓÃÌí¼Ó--------------------
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -50,8 +51,11 @@ OS_EVENT *Sem_Com3Send;
 
 //chunjie
 void timer_100ms_callback(OS_TMR *ptmr, void *p_arg);
+void timer_1s_callback(OS_TMR *ptmr, void *p_arg);
+void init_module_addr();
 OS_TMR   *timer_100ms;
 OS_TMR   *timer_50ms;
+OS_TMR   *timer_1s;
 u8      comm1_master_wait_time_out;
 u8 		comm1_master_complete_send;
 u8 		comm1_master_complete_recv;
@@ -111,10 +115,12 @@ static void TaskCreate(void *p_arg)
   #if (OS_TASK_STAT_EN > 0)
 	OSStatInit();
   #endif
-  
+
     timer_100ms=OSTmrCreate(10,10,OS_TMR_OPT_PERIODIC,(OS_TMR_CALLBACK)timer_100ms_callback,0,p,&err);
 
- 
+    //Initialize the module address
+
+
   OSTaskCreate(TaskFunction,(void*)0,&TaskFunctionStk[TASK_FUNCTION_STK_SIZE-1],TASK_FUNCTION_PRIO);
   OSTaskCreate(TaskLogic,(void*)0,&TaskLogicStk[TASK_LOGIC_STK_SIZE-1],TASK_LOGIC_PRIO); // PID control
   OSTaskCreate(TaskMMI,(void*)0,&TaskMMIStk[TASK_MMI_STK_SIZE-1],TASK_MMI_PRIO);
@@ -406,7 +412,7 @@ static void TaskComm1Rece(void *p_arg)
 static void TaskMMI(void *p_arg)
 {
 	(void)p_arg;
-    
+
 	while(1)
 	{
 		//P_Function_RunStatus(500);
@@ -415,8 +421,9 @@ static void TaskMMI(void *p_arg)
         //MMSenDFuncode03Frame(0x1,0xc8,1);
         // Read all DO
         MMSenDFuncode03Frame(0x1,0x12c,0x00);
-    
-            
+
+
+
 
 #if 0
 		COMM2_SendBuf.DataBuf[0] = 0x55;
@@ -468,4 +475,41 @@ void timer_100ms_callback(OS_TMR *ptmr, void *p_arg) {
    Sys_Run_LED(led_on & 0x01);
     led_on = ~led_on;
     // OSTmrStart(timer_100ms, &err); //Start timer
+}
+
+void timer_1000ms_callback(OS_TMR *ptmr, void *p_arg) {
+    u8 err;
+    u16 fake_second, fake_minute, fake_day;
+
+    fake_second = ALL_DATA_RAM[FAKE_S];
+    fake_minute = ALL_DATA_RAM[FAKE_MIN];
+    fake_day = ALL_DATA_RAM[FAKE_DAY];
+    fake_second = fake_second + 1;
+
+    if (fake_second == 60) {
+        if (fake_minute == 1440) {
+            fake_day = fake_day + 1;
+            fake_second = 0;
+            fake_minute = 0;
+        }
+        else {
+            fake_minute = fake_minute + 1;
+            fake_second = 0;
+        }
+    }
+
+    ALL_DATA_RAM[FAKE_S] = fake_second;
+    ALL_DATA_RAM[FAKE_MIN] = fake_minute;
+    ALL_DATA_RAM[FAKE_DAY] = fake_day;
+
+
+    // OSTmrStart(timer_100ms, &err); //Start timer
+}
+
+void init_module_addr() {
+
+    ALL_DATA_RAM[MODULE_ADDR] = 0xff55;
+    EEPROM_Write_Byte(MODULE_IIC_ADDR_LOW,0x55);
+    EEPROM_Write_Byte(MODULE_IIC_ADDR_HI,0xFF);
+
 }

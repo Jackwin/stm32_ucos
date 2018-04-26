@@ -14,6 +14,7 @@
 #include "sys.h"
 #include "usart.h"
 #include "control_main.h"
+#include "24cxx.h"
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
@@ -40,6 +41,7 @@ void P_Comm3_Handle(void)
     static COMM_DATA comm3_sendbuf_temp;
     u16 *pdes;
     u8 err;
+    u16 data_tmp;
 
     OS_ENTER_CRITICAL();
     sys_number_temp = (u8)ALL_DATA_RAM[SYS_NUMBER_BASE];
@@ -47,7 +49,7 @@ void P_Comm3_Handle(void)
     COMM3_ReceBuf.DataCount = 0;
     COMM3_ReceBuf.DataLong  = 0;
     OS_EXIT_CRITICAL();
-    
+
     data_crc_temp = Get_CRC(&comm3_recebuf_temp.DataBuf[0], (comm3_recebuf_temp.DataLong - 2));
     if(data_crc_temp == (u16)(((u16)comm3_recebuf_temp.DataBuf[comm3_recebuf_temp.DataLong - 2] << 8) | (comm3_recebuf_temp.DataBuf[comm3_recebuf_temp.DataLong - 1])))
     {
@@ -69,6 +71,18 @@ void P_Comm3_Handle(void)
                   comm3_sendbuf_temp.CommChannel = 3;
                   comm3_sendbuf_temp.DataCount   = 0;
                   comm3_sendbuf_temp.OK          = 1;
+                  //add by chunjie
+
+                  //heart beat
+                  if (starting_target_addr_temp == HEART_BEAT_ADDR) {
+                    OS_ENTER_CRITICAL();
+                    if ((ALL_DATA_RAM[BIT_CONFIG_ADDR] >> 1) & 0x01 == 0x01)
+                      ALL_DATA_RAM[HEART_BEAT_ADDR] = ALL_DATA_RAM[HEART_BEAT_ADDR] + 1;
+                    OS_EXIT_CRITICAL();
+
+                  }
+
+
                   // Copy data(high byte and low byte) from ALL_DATA_RAM
                   for(i=0; i<num_of_registers_temp; i++)
                     {
@@ -101,9 +115,16 @@ void P_Comm3_Handle(void)
 
                     pdes = (u16*)(&ALL_DATA_RAM[starting_target_addr_temp]);
                   OS_ENTER_CRITICAL();
-                  //ALL_DATA_RAM[starting_target_addr_temp] = required_value_temp;
+                  ALL_DATA_RAM[starting_target_addr_temp] = required_value_temp;
                   *pdes = required_value_temp;
+
                   OS_EXIT_CRITICAL();
+
+                  // Write module addr
+                  if (starting_target_addr_temp == MODULE_ADDR) {
+                      EEPROM_Write_Byte(MODULE_IIC_ADDR_LOW, (u8)(*pdes));
+                      EEPROM_Write_Byte(MODULE_IIC_ADDR_HI,(u8)(*pdes >> 8));
+                  }
 
                   comm3_sendbuf_temp.DataLong    = comm3_recebuf_temp.DataLong;
                   memcpy(&comm3_sendbuf_temp.DataBuf[0], &comm3_recebuf_temp.DataBuf[0], comm3_sendbuf_temp.DataLong);
@@ -391,13 +412,13 @@ void P_Comm1_Handle(void)
                   OS_ENTER_CRITICAL();
                   ALL_DATA_RAM[RECV1_ADDR] = comm1_recebuf_temp.DataBuf[3] << 8 | comm1_recebuf_temp.DataBuf[4];
                   OS_EXIT_CRITICAL();
-                  
+
                   for(i=0; i<num_of_registers_temp; i++)
                     {
                         OS_ENTER_CRITICAL();
                         comm1_sendbuf_temp.DataBuf[(i<<1)+3] = (u8)(ALL_DATA_RAM[starting_target_addr_temp+i] >> 8);
                         comm1_sendbuf_temp.DataBuf[(i<<1)+4] = (u8)(ALL_DATA_RAM[starting_target_addr_temp+i]);
-                        
+
                         OS_EXIT_CRITICAL();
                     }
 
